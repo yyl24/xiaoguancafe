@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小馆咖啡 · 遇见</title>
+<style>
+:root {
+  --bg: #1C1512;
+  --surface: #261D18;
+  --gold: #C8945A;
+  --gold-bright: #E0B878;
+  --rust: #B86848;
+  --cream: #E8D5C0;
+  --text-soft: #B8A088;
+  --accent: #6B8E6B;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Serif SC', serif;
+  background: var(--bg);
+  color: var(--cream);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+/* ========== PARALLAX CONTAINER ========== */
+.parallax-wrapper {
+  height: 100vh; overflow-y: auto; overflow-x: hidden;
+  perspective: 1px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.parallax-wrapper::-webkit-scrollbar { display: none; }
+
+/* ========== LOADING ========== */
+#loading {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.8s, visibility 0.8s;
+}
+#loading.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.loading-envelope {
+  width: 60px; height: 40px;
+  border: 2px solid var(--gold);
+  border-radius: 4px;
+  position: relative;
+  animation: envelopeFloat 2s ease-in-out infinite;
+}
+.loading-envelope::after {
+  content: '';
+  position: absolute; top: -20px; left: -2px;
+  width: 0; height: 0;
+  border-left: 32px solid transparent;
+  border-right: 32px solid transparent;
+  border-bottom: 22px solid var(--gold);
+  opacity: 0.6;
+}
+@keyframes envelopeFloat {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+.loading-label {
+  color: var(--gold);
+  font-size: 0.75rem; letter-spacing: 0.3em;
+  margin-top: 20px; opacity: 0.7;
+}
+
+/* ========== MUSIC ========== */
+#music-btn {
+  position: fixed; top: 24px; right: 24px; z-index: 100;
+  width: 42px; height: 42px; border-radius: 50%;
+  background: rgba(28,21,18,0.7); backdrop-filter: blur(10px);
+  border: 1px solid rgba(200,148,90,0.3);
+  color: var(--gold); font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ========== PAGE INDICATOR ========== */
+.page-dots {
+  position: fixed; right: 16px; top: 50%; transform: translateY(-50%);
+  z-index: 99; display: flex; flex-direction: column; gap: 10px;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(200,148,90,0.25);
+  transition: all 0.4s; cursor: pointer;
+}
+.dot.active { background: var(--gold); box-shadow: 0 0 10px rgba(200,148,90,0.5); transform: scale(1.5); }
+
+/* ========== SECTIONS ========== */
+.section {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative; padding: 60px 28px;
+}
+
+/* ========== SCENE 1: COVER ========== */
+#sec-cover {
+  background: radial-gradient(ellipse at 50% 30%, #2D2018 0%, var(--bg) 70%);
+  text-align: center;
+}
+.cover-envelope {
+  width: 100px; height: 68px;
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  position: relative; margin-bottom: 32px;
+  animation: envelopeFloat 3s ease-in-out infinite;
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(200,148,90,0.05), transparent);
+}
+.cover-envelope::before {
+  content: '';
+  position: absolute; top: -30px; left: -2px;
+  width: 0; height: 0;
+  border-left: 52px solid transparent;
+  border-right: 52px solid transparent;
+  border-bottom: 32px solid var(--gold);
+  opacity: 0.7;
+}
+.cover-envelope .seal {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 28px; height: 28px;
+  background: var(--rust);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(184,104,72,0.4);
+}
+.cover-title {
+  font-size: 2.2rem; font-weight: 300;
+  letter-spacing: 0.3em;
+  color: var(--gold-bright);
+}
+.cover-title strong {
+  font-weight: 700;
+  display: block; font-size: 1.4rem;
+  letter-spacing: 0.2em;
+  margin-top: 4px;
+}
+.cover-subtitle {
+  font-size: 0.75rem; letter-spacing: 0.25em;
+  color: var(--text-soft); margin-top: 16px;
+}
+.cover-lace {
+  width: 60px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 20px auto;
+}
+.cover-hint {
+  position: absolute; bottom: 40px;
+  font-size: 0.65rem; letter-spacing: 0.2em;
+  color: rgba(184,160,136,0.5);
+  animation: fadeHint 2s ease-in-out infinite;
+}
+@keyframes fadeHint {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* ========== SCENE 2: SHOP FRONT (CSS Illustration) ========== */
+#sec-shop {
+  background: linear-gradient(180deg, #1C1512, #241D18);
+}
+.scene-frame {
+  width: 100%; max-width: 340px;
+  background: var(--surface);
+  border: 1px solid rgba(200,148,90,0.12);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+.scene-canvas {
+  width: 100%; height: 220px;
+  position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #3A2820 0%, #2D1F18 40%, #1C1512 100%);
+}
+/* CSS Shop Illustration */
+.shop-sky {
+  position: absolute; top: 0; left: 0; right: 0; height: 55%;
+  background: linear-gradient(180deg, #1A2530, #2D3845, #4A4035);
+}
+.shop-moon {
+  position: absolute; top: 20px; right: 40px;
+  width: 30px; height: 30px;
+  background: radial-gradient(circle at 35% 35%, #F5E6C8, #D4C090);
+  border-radius: 50%;
+  box-shadow: 0 0 30px rgba(245,230,200,0.3);
+}
+.shop-stars {
+  position: absolute; top: 30px; left: 40px;
+  display: flex; gap: 20px;
+}
+.shop-stars span {
+  width: 2px; height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 2s ease-in-out infinite;
+}
+.shop-stars span:nth-child(2) { animation-delay: 0.7s; }
+.shop-stars span:nth-child(3) { animation-delay: 1.4s; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+/* Building */
+.shop-building {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 60%; height: 45%;
+  background: linear-gradient(180deg, #4A3028, #3D2520);
+  border-radius: 6px 6px 0 0;
+}
+.shop-roof {
+  position: absolute; bottom: 43%; left: 50%; transform: translateX(-50%);
+  width: 68%; height: 8px;
+  background: #5C3D30;
+  border-radius: 2px 2px 0 0;
+}
+.shop-window {
+  position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
+  width: 70%; height: 35%;
+  background: linear-gradient(180deg, #F5D880, #E8B840);
+  border-radius: 8px;
+  box-shadow: 0 0 30px rgba(245,216,128,0.4), 0 0 60px rgba(232,184,64,0.2);
+}
+.shop-window::after {
+  content: ''; position: absolute; inset: 3px;
+  border: 1px solid rgba(180,130,50,0.3);
+  border-radius: 5px;
+}
+.shop-window-cross {
+  position: absolute; top: 50%; left: 0; right: 0;
+  height: 1px; background: rgba(180,130,50,0.3);
+}
+.shop-door {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 25%; height: 30%;
+  background: #3D2520;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid rgba(200,148,90,0.2);
+}
+.shop-sign {
+  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+  font-size: 0.55rem; color: var(--gold-bright);
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+}
+.shop-lamp {
+  position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 10px; background: #5C3D30;
+}
+.shop-lamp::after {
+  content: ''; position: absolute; bottom: -6px; left: -4px;
+  width: 12px; height: 8px;
+  background: radial-gradient(ellipse, #F5D880, #E8B840);
+  border-radius: 50%;
+  box-shadow: 0 0 16px rgba(245,216,128,0.5);
+}
+
+/* ========== SCENE 3: INTERIOR ========== */
+#sec-interior {
+  background: linear-gradient(180deg, #241D18, #261E18);
+}
+.interior-scene {
+  width: 100%; max-width: 340px; height: 240px;
+  background: linear-gradient(180deg, #3D2D22 0%, #2D1F18 50%, #1C1512 100%);
+  border-radius: 20px; position: relative; overflow: hidden;
+  border: 1px solid rgba(200,148,90,0.12);
+}
+/* CSS Interior */
+.interior-wall {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, #3A2820, #2D1F18);
+}
+.interior-shelf {
+  position: absolute; top: 30px; left: 20px;
+  width: 60px; height: 4px;
+  background: #5C3D30;
+}
+.interior-shelf::after {
+  content: '📚☕🫖';
+  position: absolute; top: -22px; left: 0;
+  font-size: 0.9rem; letter-spacing: 2px;
+}
+.interior-counter {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, #4A3528, #3D2A20);
+}
+.interior-counter-top {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 4px;
+  background: #6B4D38;
+}
+.interior-machine {
+  position: absolute; bottom: 10%; left: 30%;
+  width: 50px; height: 45px;
+  background: linear-gradient(180deg, #5C4A3A, #4A3830);
+  border-radius: 8px 8px 4px 4px;
+}
+.interior-machine::after {
+  content: '';
+  position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+  width: 20px; height: 15px;
+  background: #6B5A4A;
+  border-radius: 4px 4px 0 0;
+}
+.interior-cup {
+  position: absolute; bottom: 20%; left: 55%;
+  font-size: 1.5rem;
+}
+.interior-steam {
+  position: absolute; bottom: 32%; left: 57%;
+  display: flex; gap: 4px;
+}
+.interior-steam span {
+  width: 2px; height: 10px;
+  background: rgba(232,213,192,0.4);
+  border-radius: 2px;
+  animation: steamUp 1.5s ease-in-out infinite;
+}
+.interior-steam span:nth-child(2) { animation-delay: 0.5s; }
+@keyframes steamUp {
+  0%, 100% { opacity: 0.2; transform: translateY(0) scaleY(1); }
+  50% { opacity: 0.6; transform: translateY(-10px) scaleY(2); }
+}
+.interior-light {
+  position: absolute; top: 15px; right: 30px;
+  width: 40px; height: 40px;
+  background: radial-gradient(circle, rgba(245,216,128,0.3), transparent 70%);
+  border-radius: 50%;
+}
+
+/* ========== SCENE 4: MEMORIES — FLIP CARDS ========== */
+#sec-memories {
+  background: linear-gradient(180deg, #261E18, #1F1814);
+}
+.memories-title {
+  font-size: 1.2rem; letter-spacing: 0.2em;
+  color: var(--gold); margin-bottom: 28px;
+  font-weight: 300;
+}
+.flip-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 14px; max-width: 340px; width: 100%;
+}
+.flip-card {
+  aspect-ratio: 1;
+  perspective: 800px;
+  cursor: pointer;
+}
+.flip-inner {
+  width: 100%; height: 100%;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  position: relative;
+}
+.flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+.flip-front, .flip-back {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 16px;
+}
+.flip-front {
+  background: var(--surface);
+  border: 1px solid rgba(200,148,90,0.15);
+}
+.flip-back {
+  background: linear-gradient(135deg, #2D2018, #3D2820);
+  border: 1px solid rgba(200,148,90,0.25);
+  transform: rotateY(180deg);
+}
+.flip-icon { font-size: 2rem; margin-bottom: 8px; }
+.flip-label {
+  font-size: 0.7rem; letter-spacing: 0.08em;
+  color: var(--text-soft);
+}
+.flip-back-title {
+  font-size: 0.75rem; color: var(--gold-bright);
+  letter-spacing: 0.05em; margin-bottom: 6px;
+}
+.flip-back-text {
+  font-size: 0.65rem; color: var(--text-soft);
+  text-align: center; line-height: 1.6;
+}
+
+/* ========== SCENE 5: MAP & DETAILS ========== */
+#sec-details-map {
+  background: linear-gradient(180deg, #1F1814, #1C1512);
+}
+.details-card {
+  background: var(--surface);
+  border: 1px solid rgba(200,148,90,0.15);
+  border-radius: 20px; padding: 28px 24px;
+  max-width: 340px; width: 100%;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+.detail-row {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(200,148,90,0.08);
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(200,148,90,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.detail-dot.active-dot {
+  background: var(--rust);
+  animation: dotGlow 2s ease-in-out infinite;
+}
+@keyframes dotGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(184,104,72,0); }
+  50% { box-shadow: 0 0 16px rgba(184,104,72,0.5); }
+}
+.detail-text h4 {
+  font-size: 0.8rem; color: var(--gold-light, #E0B878);
+  letter-spacing: 0.05em; margin-bottom: 2px;
+}
+.detail-text p {
+  font-size: 0.7rem; color: var(--text-soft);
+  line-height: 1.5; letter-spacing: 0.03em;
+}
+
+/* ========== SCENE 6: RSVP ========== */
+#sec-rsvp-final {
+  background: radial-gradient(ellipse at 50% 80%, #2D2018 0%, var(--bg) 60%);
+  text-align: center;
+}
+.rsvp-envelope-anim {
+  width: 90px; height: 60px;
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  margin: 0 auto 24px;
+  position: relative; cursor: pointer;
+  background: var(--surface);
+  transition: all 0.3s;
+}
+.rsvp-envelope-anim.opened { border-color: transparent; background: transparent; }
+.rsvp-envelope-anim::before {
+  content: '';
+  position: absolute; top: -28px; left: -2px;
+  width: 0; height: 0;
+  border-left: 47px solid transparent;
+  border-right: 47px solid transparent;
+  border-bottom: 30px solid var(--gold);
+  opacity: 0.7;
+  transition: all 0.5s;
+  transform-origin: top center;
+}
+.rsvp-envelope-anim.opened::before {
+  transform: rotateX(180deg);
+  opacity: 0.2;
+}
+.rsvp-input-group {
+  max-width: 300px; margin: 0 auto;
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.5s ease, margin 0.5s ease;
+}
+.rsvp-input-group.show { max-height: 300px; margin-top: 20px; }
+.rsvp-field {
+  width: 100%; padding: 13px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(200,148,90,0.2);
+  border-radius: 12px; color: var(--cream);
+  font-family: inherit; font-size: 0.8rem;
+  outline: none; margin-bottom: 10px;
+  letter-spacing: 0.05em;
+}
+.rsvp-field:focus { border-color: var(--gold); }
+.rsvp-field::placeholder { color: rgba(184,160,136,0.35); }
+.rsvp-commit {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, var(--gold), var(--rust));
+  border: none; border-radius: 25px;
+  color: white; font-weight: 600;
+  font-family: inherit; font-size: 0.85rem;
+  letter-spacing: 0.1em; cursor: pointer;
+}
+.rsvp-commit:active { transform: scale(0.96); }
+.rsvp-commit.committed { background: linear-gradient(135deg, #4A7C59, #5C8D6C); pointer-events: none; }
+
+/* Confetti */
+.confetti-piece {
+  position: fixed; pointer-events: none; z-index: 300;
+  animation: confettiDrop 2.5s ease-in forwards;
+}
+@keyframes confettiDrop {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* Toast */
+.toast {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+  z-index: 400; background: var(--gold);
+  color: var(--bg); padding: 10px 24px;
+  border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.05em;
+  animation: toastIn 0.4s ease, toastOut 0.4s ease 2s forwards;
+  pointer-events: none;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes toastOut {
+  from { opacity: 1; } to { opacity: 0; }
+}
+
+/* Stamp/Seal on Cover */
+.cover-stamp {
+  display: inline-block;
+  padding: 6px 16px;
+  border: 2px solid var(--rust);
+  border-radius: 4px;
+  color: var(--rust);
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.15em;
+  transform: rotate(-8deg);
+  opacity: 0.8;
+  margin-top: 20px;
+}
+
+/* Smoke particles */
+.smoke-particle {
+  position: fixed; pointer-events: none; z-index: 50;
+  width: 4px; height: 4px;
+  background: rgba(200,148,90,0.3);
+  border-radius: 50%;
+  animation: smokeDrift 5s ease-out forwards;
+}
+@keyframes smokeDrift {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(4); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="loading-envelope"></div>
+  <div class="loading-label">一 封 来 信</div>
+</div>
+
+<!-- Music -->
+<button id="music-btn" onclick="toggleMusic()">♪</button>
+
+<!-- Page Dots -->
+<nav class="page-dots" id="pageDots">
+  <div class="dot active" onclick="scrollToSec(0)"></div>
+  <div class="dot" onclick="scrollToSec(1)"></div>
+  <div class="dot" onclick="scrollToSec(2)"></div>
+  <div class="dot" onclick="scrollToSec(3)"></div>
+  <div class="dot" onclick="scrollToSec(4)"></div>
+  <div class="dot" onclick="scrollToSec(5)"></div>
+</nav>
+
+<!-- Parallax Wrapper -->
+<div class="parallax-wrapper" id="parallaxWrapper">
+
+  <!-- SEC 0: COVER -->
+  <section class="section" id="sec-cover" data-index="0">
+    <div class="cover-envelope" id="coverEnvelope" onclick="openEnvelope()">
+      <div class="seal"></div>
+    </div>
+    <h1 class="cover-title"><strong>小馆咖啡</strong>遇见</h1>
+    <div class="cover-lace"></div>
+    <p class="cover-subtitle">一封来自小馆的手写信</p>
+    <div class="cover-stamp">一周年</div>
+    <div class="cover-hint">轻触信封开启</div>
+  </section>
+
+  <!-- SEC 1: SHOP FRONT -->
+  <section class="section" id="sec-shop" data-index="1">
+    <div class="scene-frame">
+      <div class="scene-canvas">
+        <div class="shop-sky">
+          <div class="shop-moon"></div>
+          <div class="shop-stars"><span></span><span></span><span></span></div>
+        </div>
+        <div class="shop-roof"></div>
+        <div class="shop-building">
+          <div class="shop-window">
+            <div class="shop-window-cross"></div>
+          </div>
+          <div class="shop-door"></div>
+          <div class="shop-lamp"></div>
+          <div class="shop-sign">小 馆 咖 啡</div>
+        </div>
+      </div>
+    </div>
+    <p style="color:var(--text-soft);font-size:0.75rem;margin-top:16px;letter-spacing:0.1em;text-align:center;">
+      夜幕降临 · 那盏灯一直亮着<br>
+      等你推门而入
+    </p>
+  </section>
+
+  <!-- SEC 2: INTERIOR -->
+  <section class="section" id="sec-interior" data-index="2">
+    <div class="interior-scene">
+      <div class="interior-wall">
+        <div class="interior-shelf"></div>
+        <div class="interior-counter">
+          <div class="interior-counter-top"></div>
+          <div class="interior-machine"></div>
+        </div>
+        <div class="interior-cup">☕</div>
+        <div class="interior-steam"><span></span><span></span></div>
+        <div class="interior-light"></div>
+      </div>
+    </div>
+    <p style="color:var(--text-soft);font-size:0.75rem;margin-top:16px;letter-spacing:0.1em;text-align:center;">
+      磨豆声 · 蒸汽声 · 翻书声<br>
+      这里的时间走得很慢
+    </p>
+  </section>
+
+  <!-- SEC 3: MEMORIES - FLIP CARDS -->
+  <section class="section" id="sec-memories" data-index="3">
+    <h2 class="memories-title">小馆 · 珍藏</h2>
+    <div class="flip-grid">
+      <div class="flip-card" onclick="this.classList.toggle('flipped')">
+        <div class="flip-inner">
+          <div class="flip-front">
+            <div class="flip-icon">☕</div>
+            <div class="flip-label">第一杯咖啡</div>
+          </div>
+          <div class="flip-back">
+            <div class="flip-back-title">2025.07.01</div>
+            <div class="flip-back-text">开业首日，第一位客人点了一杯美式。我们紧张到手抖，拉花失败了三次。</div>
+          </div>
+        </div>
+      </div>
+      <div class="flip-card" onclick="this.classList.toggle('flipped')">
+        <div class="flip-inner">
+          <div class="flip-front">
+            <div class="flip-icon">💌</div>
+            <div class="flip-label">留言墙</div>
+          </div>
+          <div class="flip-back">
+            <div class="flip-back-title">100+ 张便利贴</div>
+            <div class="flip-back-text">"这里的拿铁让我想起了家"——来自一位大一新生。</div>
+          </div>
+        </div>
+      </div>
+      <div class="flip-card" onclick="this.classList.toggle('flipped')">
+        <div class="flip-inner">
+          <div class="flip-front">
+            <div class="flip-icon">🎵</div>
+            <div class="flip-label">最受欢迎</div>
+          </div>
+          <div class="flip-back">
+            <div class="flip-back-title">海盐焦糖拿铁</div>
+            <div class="flip-back-text">一年卖出8000+杯，荣登小馆菜单榜首。</div>
+          </div>
+        </div>
+      </div>
+      <div class="flip-card" onclick="this.classList.toggle('flipped')">
+        <div class="flip-inner">
+          <div class="flip-front">
+            <div class="flip-icon">🪴</div>
+            <div class="flip-label">绿植角</div>
+          </div>
+          <div class="flip-back">
+            <div class="flip-back-title">36盆绿植</div>
+            <div class="flip-back-text">客人带来的每一盆植物都有名字。绿萝"小馆一号"已经垂到了地上。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEC 4: DETAILS + MAP -->
+  <section class="section" id="sec-details-map" data-index="4">
+    <div class="details-card">
+      <div class="detail-row">
+        <div class="detail-dot active-dot">📅</div>
+        <div class="detail-text">
+          <h4>一周年庆典</h4>
+          <p>2026年7月1日（周三）10:00 — 22:00</p>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-dot">📍</div>
+        <div class="detail-text">
+          <h4>小馆地址</h4>
+          <p>郑州市新郑市孟港路六号<br>郑州智能科技职业技术学院内</p>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-dot">🎁</div>
+        <div class="detail-text">
+          <h4>到店福利</h4>
+          <p>限定周年杯垫 · 第二杯半价<br>会员双倍积分 · 周年特调品鉴</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEC 5: RSVP -->
+  <section class="section" id="sec-rsvp-final" data-index="5">
+    <div class="rsvp-envelope-anim" id="rsvpEnvelope" onclick="openRSVP()">
+      <div class="seal" style="width:24px;height:24px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--rust);border-radius:50%;box-shadow:0 0 12px rgba(184,104,72,0.4);"></div>
+    </div>
+    <p style="color:var(--text-soft);font-size:0.7rem;letter-spacing:0.1em;margin-bottom:4px;">轻触火漆 · 开启回函</p>
+
+    <div class="rsvp-input-group" id="rsvpGroup">
+      <input class="rsvp-field" id="rsvpName3" placeholder="你的名字" maxlength="20">
+      <input class="rsvp-field" id="rsvpPhone3" placeholder="手机号码（选填）" maxlength="15">
+      <button class="rsvp-commit" id="rsvpCommit3" onclick="submitForm()">💌 寄出回函</button>
+    </div>
+
+    <p style="color:rgba(184,160,136,0.4);font-size:0.6rem;margin-top:40px;letter-spacing:0.1em;">
+      期待与你 · 在小馆相遇
+    </p>
+  </section>
+
+</div>
+
+<script>
+// Loading
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('loading').classList.add('hidden'), 2000);
+});
+
+// ========== MUSIC ==========
+let musicOn = true;
+function toggleMusic() {
+  musicOn = !musicOn;
+  const btn = document.getElementById('music-btn');
+  btn.style.opacity = musicOn ? '1' : '0.5';
+}
+
+// ========== PAGE DOTS ==========
+const wrapper = document.getElementById('parallaxWrapper');
+const sections = document.querySelectorAll('.section');
+const dots = document.querySelectorAll('.dot');
+
+wrapper.addEventListener('scroll', () => {
+  const mid = wrapper.scrollTop + wrapper.clientHeight / 2;
+  let active = 0;
+  sections.forEach((sec, i) => {
+    const top = sec.offsetTop;
+    const bottom = top + sec.offsetHeight;
+    if (mid >= top && mid < bottom) active = i;
+  });
+  dots.forEach((d, i) => d.classList.toggle('active', i === active));
+});
+
+function scrollToSec(i) {
+  sections[i].scrollIntoView({ behavior: 'smooth' });
+}
+
+// ========== COVER ENVELOPE ==========
+function openEnvelope() {
+  const env = document.getElementById('coverEnvelope');
+  env.style.transform = 'scale(1.1)';
+  setTimeout(() => { env.style.transform = ''; scrollToSec(1); }, 400);
+  spawnSmoke(env);
+}
+
+// Smoke particles
+function spawnSmoke(el) {
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  for (let i = 0; i < 15; i++) {
+    const p = document.createElement('div');
+    p.className = 'smoke-particle';
+    p.style.left = cx + 'px';
+    p.style.top = cy + 'px';
+    p.style.setProperty('--dx', (Math.random() - 0.5) * 120 + 'px');
+    p.style.setProperty('--dy', -(40 + Math.random() * 80) + 'px');
+    p.style.animationDelay = Math.random() * 0.5 + 's';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 5500);
+  }
+}
+
+// ========== RSVP ENVELOPE ==========
+function openRSVP() {
+  const env = document.getElementById('rsvpEnvelope');
+  env.classList.add('opened');
+  document.getElementById('rsvpGroup').classList.add('show');
+}
+
+// ========== SUBMIT RSVP ==========
+function submitForm() {
+  const name = document.getElementById('rsvpName3').value.trim();
+  if (!name) { toast('请写下你的名字～'); return; }
+
+  const btn = document.getElementById('rsvpCommit3');
+  btn.textContent = '✓ 回函已寄出';
+  btn.classList.add('committed');
+
+  spawnConfetti();
+
+  const guests = JSON.parse(localStorage.getItem('coffee_meet_guests') || '[]');
+  guests.push({
+    name,
+    phone: document.getElementById('rsvpPhone3').value.trim(),
+    time: new Date().toISOString()
+  });
+  localStorage.setItem('coffee_meet_guests', JSON.stringify(guests));
+
+  toast(`回函收到！${name}，我们七月一日见 💌`);
+
+  setTimeout(() => {
+    btn.textContent = '💌 寄出回函';
+    btn.classList.remove('committed');
+    document.getElementById('rsvpName3').value = '';
+    document.getElementById('rsvpPhone3').value = '';
+  }, 3500);
+}
+
+// ========== CONFETTI ==========
+function spawnConfetti() {
+  const colors = ['#C8945A','#E0B878','#B86848','#E8D5C0','#6B8E6B','#F5D880'];
+  for (let i = 0; i < 50; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.left = Math.random() * 100 + '%';
+    c.style.top = -(Math.random() * 20) + 'px';
+    c.style.width = (5 + Math.random() * 8) + 'px';
+    c.style.height = (5 + Math.random() * 8) + 'px';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    c.style.animationDelay = Math.random() * 0.8 + 's';
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3500);
+  }
+}
+
+// ========== TOAST ==========
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+// ========== KEYBOARD ==========
+document.addEventListener('keydown', e => {
+  const cur = parseInt([...dots].find(d => d.classList.contains('active'))?.dataset?.index || '0', 10) || 0;
+  const arr = [...dots].map((_, i) => i);
+  const idx = arr.indexOf(cur);
+  if ((e.key === 'ArrowDown' || e.key === 'j') && idx < dots.length - 1) {
+    e.preventDefault(); scrollToSec(idx + 1);
+  } else if ((e.key === 'ArrowUp' || e.key === 'k') && idx > 0) {
+    e.preventDefault(); scrollToSec(idx - 1);
+  }
+});
+
+// Inject dot data-index attributes
+dots.forEach((d, i) => d.dataset.index = i);
+
+console.log('%c✉️ 小馆咖啡 · 遇见 %c一周年手写信 %c🎂',
+  'font-size:1.1em;color:#C8945A;', 'font-size:0.85em;color:#E0B878;', 'font-size:1.1em;');
+console.log('%c郑州市新郑市孟港路六号 · 郑州智能科技职业技术学院内',
+  'color:#B8A088;font-size:0.75em;');
+</script>
+</body>
+</html>

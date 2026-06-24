@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小馆咖啡 · 时光印记</title>
+<style>
+:root {
+  --bg: #1A0F0A;
+  --gold: #D4A04A;
+  --gold-light: #E8C97A;
+  --warm: #C4754A;
+  --cream: #F0DFC8;
+  --card-bg: #241510;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--cream);
+  overflow: hidden;
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Loading */
+#loading {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.6s, visibility 0.6s;
+}
+#loading.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.loading-ring {
+  width: 50px; height: 50px;
+  border: 2px solid rgba(212,160,74,0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-label {
+  color: var(--gold-light);
+  font-size: 0.8rem; letter-spacing: 0.3em;
+  margin-top: 20px;
+}
+
+/* Main container */
+.main-container {
+  height: 100vh; display: flex; flex-direction: column;
+}
+
+/* Header */
+.header {
+  padding: 40px 24px 20px;
+  text-align: center; flex-shrink: 0;
+  position: relative; z-index: 10;
+}
+.header-icon {
+  font-size: 2rem; margin-bottom: 8px;
+  display: inline-block;
+  animation: gentleFloat 3s ease-in-out infinite;
+}
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.header h1 {
+  font-size: 1.5rem; font-weight: 700;
+  letter-spacing: 0.2em;
+  background: linear-gradient(180deg, #E8C97A, #C4754A);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header p {
+  font-size: 0.7rem; color: rgba(240,223,200,0.5);
+  letter-spacing: 0.15em; margin-top: 6px;
+}
+
+/* Timeline track */
+.timeline-wrapper {
+  flex: 1; overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  display: flex; align-items: center;
+  padding: 0 50vw 20px;
+  scrollbar-width: none;
+}
+.timeline-wrapper::-webkit-scrollbar { display: none; }
+
+/* Timeline rail */
+.timeline-rail {
+  display: flex; gap: 0;
+  position: relative;
+  padding: 40px 0;
+}
+.timeline-rail::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(212,160,74,0.3) 10%,
+    rgba(212,160,74,0.6) 50%,
+    rgba(212,160,74,0.3) 90%,
+    transparent 100%
+  );
+  z-index: 0;
+}
+
+/* Month card */
+.month-card {
+  flex-shrink: 0; width: 280px;
+  scroll-snap-align: center;
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 20px;
+}
+
+/* Dot on timeline */
+.month-dot {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 20px rgba(212,160,74,0.5);
+  position: relative; z-index: 2;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+.month-dot::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(212,160,74,0.3);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.4); opacity: 0; }
+}
+
+/* Content card */
+.month-content {
+  background: var(--card-bg);
+  border: 1px solid rgba(212,160,74,0.15);
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
+}
+.month-content::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.5;
+}
+.month-num {
+  font-size: 2.5rem; font-weight: 900;
+  color: var(--gold);
+  line-height: 1;
+  opacity: 0.3;
+  position: absolute;
+  top: 12px; right: 16px;
+  font-style: italic;
+}
+.month-title {
+  font-size: 0.9rem; font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--gold-light);
+  margin-bottom: 4px;
+  position: relative;
+}
+.month-subtitle {
+  font-size: 0.7rem; color: rgba(240,223,200,0.45);
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+.month-illustration {
+  width: 100%; height: 120px;
+  margin: 12px 0;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.month-story {
+  font-size: 0.78rem; color: rgba(240,223,200,0.7);
+  line-height: 1.7; letter-spacing: 0.04em;
+}
+.month-story strong {
+  color: var(--gold-light);
+  font-weight: 600;
+}
+
+/* ========== CSS Illustrations ========== */
+.illust-spring { background: linear-gradient(180deg, #2D1F1A 0%, #3D2820 40%, #4A3525 100%); }
+.illust-spring .scene {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, #4A6B3D, #3D5A32);
+  border-radius: 60% 60% 0 0;
+}
+.illust-spring .tree {
+  position: absolute; bottom: 30%; left: 50%; transform: translateX(-50%);
+  width: 8px; height: 40px; background: #5C3D2E;
+}
+.illust-spring .bloom {
+  position: absolute; bottom: 50%; left: 50%; transform: translateX(-50%);
+  width: 35px; height: 35px;
+  background: radial-gradient(circle, #F0B8C8, #E892A8);
+  border-radius: 50%;
+  box-shadow: 12px -5px 0 #F0C8D4, -10px -8px 0 #E8A0B5, 0 -14px 0 #F5C0D0;
+}
+.illust-spring .steam-cup {
+  position: absolute; bottom: 18px; right: 30px;
+  font-size: 1.5rem; opacity: 0.7;
+}
+
+.illust-summer { background: linear-gradient(180deg, #2A2018 0%, #3A2A18 50%, #4A3020 100%); }
+.illust-summer .sun {
+  position: absolute; top: 15px; right: 25px;
+  width: 30px; height: 30px;
+  background: radial-gradient(circle, #F5C842, #E8A820);
+  border-radius: 50%;
+  box-shadow: 0 0 30px rgba(245,200,66,0.4);
+}
+.illust-summer .ice-cup {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  width: 40px; height: 45px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 4px 4px 12px 12px;
+  background: linear-gradient(180deg, rgba(200,160,100,0.4), rgba(180,130,80,0.2));
+}
+.illust-summer .ice-cubes {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px;
+}
+.illust-summer .ice-cubes span {
+  display: block; width: 8px; height: 8px;
+  background: rgba(200,220,240,0.5);
+  border-radius: 2px;
+}
+
+.illust-autumn { background: linear-gradient(180deg, #2D2018 0%, #3D2818 50%, #4A2D18 100%); }
+.illust-autumn .leaf {
+  position: absolute; top: 25px;
+  width: 14px; height: 14px;
+  background: var(--warm);
+  border-radius: 50% 0 50% 0;
+  animation: leafFall 3s ease-in-out infinite;
+}
+.illust-autumn .leaf:nth-child(1) { left: 20%; animation-delay: 0s; }
+.illust-autumn .leaf:nth-child(2) { left: 50%; animation-delay: 1s; }
+.illust-autumn .leaf:nth-child(3) { left: 70%; animation-delay: 2s; }
+@keyframes leafFall {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+  50% { transform: translateY(20px) rotate(20deg); opacity: 0.3; }
+}
+.illust-autumn .pumpkin-cup {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  font-size: 2rem;
+}
+
+.illust-winter { background: linear-gradient(180deg, #201D24 0%, #2A2530 50%, #302830 100%); }
+.illust-winter .snow {
+  position: absolute;
+  width: 3px; height: 3px;
+  background: white;
+  border-radius: 50%;
+  animation: snowFall 4s linear infinite;
+}
+@keyframes snowFall {
+  0% { transform: translateY(-10px); opacity: 0.8; }
+  100% { transform: translateY(130px); opacity: 0; }
+}
+.illust-winter .hot-cup {
+  position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+  font-size: 2rem;
+}
+
+/* Nav arrows */
+.nav-hint {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 18px; z-index: 20;
+}
+.nav-arrow {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(212,160,74,0.15);
+  border: 1px solid rgba(212,160,74,0.3);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 1rem; color: var(--gold);
+  transition: all 0.3s;
+}
+.nav-arrow:active { background: rgba(212,160,74,0.3); transform: scale(0.9); }
+
+/* Final card */
+.final-card {
+  width: 240px; flex-shrink: 0;
+  scroll-snap-align: center;
+}
+.final-content {
+  background: linear-gradient(135deg, rgba(212,160,74,0.12), rgba(196,117,74,0.08));
+  border: 2px solid rgba(212,160,74,0.3);
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+}
+.final-icon { font-size: 3rem; margin-bottom: 12px; }
+.final-title {
+  font-size: 1.2rem; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+}
+.final-date {
+  font-size: 0.75rem; color: var(--gold-light);
+  margin-top: 8px; letter-spacing: 0.1em;
+}
+.final-addr {
+  font-size: 0.65rem; color: rgba(240,223,200,0.5);
+  margin-top: 12px; line-height: 1.6;
+}
+
+/* Music btn */
+#music-btn {
+  position: fixed; top: 20px; right: 20px; z-index: 100;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(26,15,10,0.7);
+  border: 1px solid rgba(212,160,74,0.3);
+  color: var(--gold);
+  font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(10px);
+}
+#music-btn.playing { animation: musicGlow 2s ease-in-out infinite; }
+@keyframes musicGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(212,160,74,0.3); }
+  50% { box-shadow: 0 0 20px rgba(212,160,74,0.6); }
+}
+
+/* Progress bar */
+.progress-bar {
+  position: fixed; bottom: 0; left: 0; height: 2px;
+  background: var(--gold);
+  z-index: 100;
+  transition: width 0.3s;
+}
+
+/* RSVP FAB */
+.rsvp-fab {
+  position: fixed; bottom: 60px; right: 20px; z-index: 100;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--gold), var(--warm));
+  border: none; border-radius: 25px;
+  color: white; font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.1em; cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 4px 20px rgba(212,160,74,0.3);
+  transition: all 0.3s;
+}
+.rsvp-fab:active { transform: scale(0.95); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden;
+  transition: all 0.3s;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.show { opacity: 1; visibility: visible; }
+.modal-box {
+  background: var(--card-bg);
+  border: 1px solid rgba(212,160,74,0.25);
+  border-radius: 20px;
+  padding: 28px 24px;
+  width: 300px;
+  text-align: center;
+}
+.modal-box h3 {
+  color: var(--gold-light);
+  font-size: 1rem; letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+.modal-input {
+  width: 100%; padding: 12px 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(212,160,74,0.2);
+  border-radius: 10px;
+  color: var(--cream); font-family: inherit;
+  font-size: 0.8rem; outline: none;
+  margin-bottom: 10px;
+}
+.modal-input:focus { border-color: var(--gold); }
+.modal-input::placeholder { color: rgba(240,223,200,0.3); }
+.modal-submit {
+  width: 100%; padding: 12px;
+  background: linear-gradient(135deg, var(--gold), var(--warm));
+  border: none; border-radius: 25px;
+  color: white; font-weight: 600;
+  letter-spacing: 0.1em; cursor: pointer;
+  font-family: inherit; font-size: 0.85rem;
+  margin-top: 8px;
+}
+.modal-close {
+  color: rgba(240,223,200,0.4);
+  font-size: 0.7rem; margin-top: 12px;
+  cursor: pointer; background: none; border: none;
+}
+
+/* Toast */
+.toast {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+  z-index: 300;
+  background: var(--gold);
+  color: var(--bg);
+  padding: 10px 24px; border-radius: 20px;
+  font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.05em;
+  animation: toastAnim 2.5s ease forwards;
+  pointer-events: none;
+}
+@keyframes toastAnim {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="loading-ring"></div>
+  <div class="loading-label">时光印记 · 加载中</div>
+</div>
+
+<button id="music-btn" class="playing" onclick="toggleMusic()">♪</button>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<button class="rsvp-fab" onclick="openRSVP()">📝 我要来</button>
+
+<div class="main-container">
+  <div class="header">
+    <div class="header-icon">⏳</div>
+    <h1>小馆咖啡 · 时光印记</h1>
+    <p>十二个月 · 十二个与你有关的故事</p>
+  </div>
+
+  <div class="timeline-wrapper" id="timelineWrapper">
+    <div class="timeline-rail" id="timelineRail">
+
+      <!-- Month 7: July - Opening -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">7</div>
+          <div class="month-title">🏠 七月 · 初见</div>
+          <div class="month-subtitle">2025.07.01 正式开业</div>
+          <div class="month-illustration illust-summer">
+            <div class="sun"></div>
+            <div class="ice-cup">
+              <div class="ice-cubes"><span></span><span></span></div>
+            </div>
+          </div>
+          <div class="month-story">
+            盛夏的午后，<strong>小馆咖啡</strong>在郑州智能科技职业技术学院内悄然开业。第一杯咖啡，第一位客人，一切都从这里开始。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 8 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">8</div>
+          <div class="month-title">📖 八月 · 书香</div>
+          <div class="month-subtitle">暑假特别企划</div>
+          <div class="month-illustration illust-summer">
+            <div class="sun"></div>
+            <div class="ice-cup">
+              <div class="ice-cubes"><span></span><span></span></div>
+            </div>
+          </div>
+          <div class="month-story">
+            我们在角落添了书架，<strong>第一本书</strong>是客人留下的。从此，咖啡配书，成了小馆的日常风景。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 9 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">9</div>
+          <div class="month-title">🍂 九月 · 迎新</div>
+          <div class="month-subtitle">开学季</div>
+          <div class="month-illustration illust-autumn">
+            <div class="leaf" style="left:20%"></div>
+            <div class="leaf" style="left:55%"></div>
+            <div class="leaf" style="left:75%"></div>
+            <div class="pumpkin-cup">☕</div>
+          </div>
+          <div class="month-story">
+            新学期，<strong>600多位新面孔</strong>推开了小馆的门。校园里的咖啡香，成了他们大学生活的第一印象。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 10 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">10</div>
+          <div class="month-title">🎃 十月 · 秋意</div>
+          <div class="month-subtitle">南瓜拿铁季</div>
+          <div class="month-illustration illust-autumn">
+            <div class="leaf" style="left:15%"></div>
+            <div class="leaf" style="left:45%"></div>
+            <div class="leaf" style="left:80%"></div>
+            <div class="pumpkin-cup">🎃</div>
+          </div>
+          <div class="month-story">
+            <strong>南瓜拿铁</strong>成为当月爆款。一位同学说："喝一口就像抱住了整个秋天。"这句话被我们写在了墙上。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 11 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">11</div>
+          <div class="month-title">🦃 十一月 · 感恩</div>
+          <div class="month-subtitle">感恩节活动</div>
+          <div class="month-illustration illust-autumn">
+            <div class="leaf" style="left:25%"></div>
+            <div class="leaf" style="left:60%"></div>
+            <div class="leaf" style="left:85%"></div>
+            <div class="pumpkin-cup">🧡</div>
+          </div>
+          <div class="month-story">
+            感恩节那天，我们发起了<strong>"留言换咖啡"</strong>活动。100多张便利贴贴满了整面墙，每一张都是一个温暖的故事。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 12 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">12</div>
+          <div class="month-title">❄️ 十二月 · 暖冬</div>
+          <div class="month-subtitle">圣诞特调</div>
+          <div class="month-illustration illust-winter">
+            <div class="snow" style="left:15%;animation-delay:0s"></div>
+            <div class="snow" style="left:35%;animation-delay:1s"></div>
+            <div class="snow" style="left:55%;animation-delay:2s"></div>
+            <div class="snow" style="left:75%;animation-delay:0.5s"></div>
+            <div class="snow" style="left:90%;animation-delay:1.5s"></div>
+            <div class="hot-cup">🎄</div>
+          </div>
+          <div class="month-story">
+            窗外飘着雪，屋里<strong>肉桂拿铁</strong>的香气弥漫。期末季的小馆，见证了许多通宵复习的身影。我们默默把打烊时间推迟了两小时。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 1 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">1</div>
+          <div class="month-title">🎆 一月 · 新岁</div>
+          <div class="month-subtitle">2026 新年快乐</div>
+          <div class="month-illustration illust-winter">
+            <div class="snow" style="left:10%;animation-delay:0s"></div>
+            <div class="snow" style="left:40%;animation-delay:1.2s"></div>
+            <div class="snow" style="left:65%;animation-delay:0.7s"></div>
+            <div class="snow" style="left:85%;animation-delay:1.8s"></div>
+            <div class="hot-cup">🧧</div>
+          </div>
+          <div class="month-story">
+            新年第一天，我们在门口挂了<strong>手写春联</strong>。寒假留校的同学说，小馆是他们在这个城市里最温暖的角落。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 2 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">2</div>
+          <div class="month-title">💝 二月 · 情人</div>
+          <div class="month-subtitle">情人节限定</div>
+          <div class="month-illustration illust-winter">
+            <div class="snow" style="left:20%;animation-delay:0.3s"></div>
+            <div class="snow" style="left:50%;animation-delay:1.5s"></div>
+            <div class="hot-cup">💕</div>
+          </div>
+          <div class="month-story">
+            <strong>玫瑰拿铁</strong>限时上线。有男生在这里表白成功，从此他们每周都来。我们偷偷给他们留了专属靠窗位。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 3 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">3</div>
+          <div class="month-title">🌸 三月 · 花开</div>
+          <div class="month-subtitle">春天来了</div>
+          <div class="month-illustration illust-spring">
+            <div class="scene"></div>
+            <div class="tree"></div>
+            <div class="bloom"></div>
+            <div class="steam-cup">🌸</div>
+          </div>
+          <div class="month-story">
+            校园里的樱花开了，我们推出了<strong>樱花抹茶拿铁</strong>。粉绿色的分层，像是把春天装进了杯子里。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 4 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">4</div>
+          <div class="month-title">📚 四月 · 耕耘</div>
+          <div class="month-subtitle">期中考试周</div>
+          <div class="month-illustration illust-spring">
+            <div class="scene"></div>
+            <div class="tree"></div>
+            <div class="bloom"></div>
+            <div class="steam-cup">📝</div>
+          </div>
+          <div class="month-story">
+            考试周的小馆座无虚席。我们推出了<strong>"学霸套餐"</strong>——美式+小食，续杯半价。一位同学连喝了7天，最后拿了奖学金。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 5 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">5</div>
+          <div class="month-title">🌿 五月 · 生长</div>
+          <div class="month-subtitle">绿植计划</div>
+          <div class="month-illustration illust-spring">
+            <div class="scene"></div>
+            <div class="tree"></div>
+            <div class="bloom"></div>
+            <div class="steam-cup">🪴</div>
+          </div>
+          <div class="month-story">
+            我们发起<strong>"带一盆绿植，换一杯咖啡"</strong>活动。现在小馆有30多盆植物，每一盆都有一个名字和一个主人。
+          </div>
+        </div>
+      </div>
+
+      <!-- Month 6 -->
+      <div class="month-card">
+        <div class="month-dot"></div>
+        <div class="month-content">
+          <div class="month-num">6</div>
+          <div class="month-title">🎓 六月 · 告别</div>
+          <div class="month-subtitle">毕业季</div>
+          <div class="month-illustration illust-summer">
+            <div class="sun"></div>
+            <div class="ice-cup">
+              <div class="ice-cubes"><span></span><span></span></div>
+            </div>
+          </div>
+          <div class="month-story">
+            毕业季，<strong>我们在每杯咖啡杯上写祝福</strong>。有人带着小馆的杯子去了另一个城市，说这是他们带走的最好的纪念品。
+          </div>
+        </div>
+      </div>
+
+      <!-- Final card -->
+      <div class="final-card">
+        <div class="final-content">
+          <div class="final-icon">🎂</div>
+          <div class="final-title">一周年</div>
+          <p style="color:rgba(240,223,200,0.6);font-size:0.7rem;margin:8px 0;line-height:1.8;">
+            12个月，365天<br>
+            感谢每一个你<br>
+            让这间小店有了温度
+          </p>
+          <div class="final-date">2026.07.01 · 10:00-22:00</div>
+          <div class="final-addr">郑州市新郑市孟港路六号<br>郑州智能科技职业技术学院内</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="nav-hint">
+    <button class="nav-arrow" onclick="scrollTimeline(-1)">◂</button>
+    <button class="nav-arrow" onclick="scrollTimeline(1)">▸</button>
+  </div>
+</div>
+
+<!-- RSVP Modal -->
+<div class="modal-overlay" id="rsvpModal">
+  <div class="modal-box">
+    <h3>🎉 确认出席一周年派对</h3>
+    <input class="modal-input" id="rsvpName" placeholder="你的名字" maxlength="20">
+    <input class="modal-input" id="rsvpPhone" placeholder="手机号（选填）" maxlength="15">
+    <button class="modal-submit" onclick="submitRSVP()">确认参加</button>
+    <button class="modal-close" onclick="closeRSVP()">下次再说</button>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toastContainer"></div>
+
+<script>
+// Loading
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('loading').classList.add('hidden'), 1500);
+});
+
+// Music toggle
+let musicOn = true;
+function toggleMusic() {
+  musicOn = !musicOn;
+  document.getElementById('music-btn').classList.toggle('playing', musicOn);
+}
+
+// Timeline scroll
+const wrapper = document.getElementById('timelineWrapper');
+const progressBar = document.getElementById('progressBar');
+
+wrapper.addEventListener('scroll', () => {
+  const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
+  const pct = maxScroll > 0 ? (wrapper.scrollLeft / maxScroll) * 100 : 0;
+  progressBar.style.width = pct + '%';
+});
+
+function scrollTimeline(dir) {
+  wrapper.scrollBy({ left: dir * 300, behavior: 'smooth' });
+}
+
+// Touch swipe
+let touchX = 0;
+wrapper.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+wrapper.addEventListener('touchend', e => {
+  const dx = touchX - e.changedTouches[0].clientX;
+  if (Math.abs(dx) > 50) wrapper.scrollBy({ left: dx * 2, behavior: 'smooth' });
+});
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') scrollTimeline(-1);
+  if (e.key === 'ArrowRight') scrollTimeline(1);
+});
+
+// RSVP Modal
+function openRSVP() { document.getElementById('rsvpModal').classList.add('show'); }
+function closeRSVP() { document.getElementById('rsvpModal').classList.remove('show'); }
+
+function submitRSVP() {
+  const name = document.getElementById('rsvpName').value.trim();
+  if (!name) { showToast('请留下你的名字哦～'); return; }
+  const guests = JSON.parse(localStorage.getItem('coffee_timeline_guests') || '[]');
+  guests.push({ name, phone: document.getElementById('rsvpPhone').value.trim(), time: new Date().toISOString() });
+  localStorage.setItem('coffee_timeline_guests', JSON.stringify(guests));
+  closeRSVP();
+  showToast(`谢谢 ${name}！我们七月一日见 ☕`);
+  document.getElementById('rsvpName').value = '';
+  document.getElementById('rsvpPhone').value = '';
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+// Sprinkle confetti on final card
+const finalCard = document.querySelector('.final-card');
+const confettiObserver = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) {
+    for (let i = 0; i < 30; i++) {
+      const spark = document.createElement('div');
+      spark.style.cssText = `
+        position:fixed;pointer-events:none;z-index:150;
+        width:${4+Math.random()*6}px;height:${4+Math.random()*6}px;
+        background:${['#D4A04A','#E8C97A','#C4754A','#F0DFC8'][Math.floor(Math.random()*4)]};
+        border-radius:50%;
+        top:${50+Math.random()*20}%;left:${40+Math.random()*20}%;
+        animation: sparkAnim ${1+Math.random()*2}s ease-out forwards;
+        animation-delay:${Math.random()*0.5}s;
+      `;
+      document.body.appendChild(spark);
+      setTimeout(() => spark.remove(), 3000);
+    }
+  }
+}, { threshold: 0.5 });
+confettiObserver.observe(finalCard);
+
+// Inject spark keyframes
+const styleEl = document.createElement('style');
+styleEl.textContent = `
+  @keyframes sparkAnim {
+    0% { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(${Math.random()*200-100}px, ${Math.random()*-200-100}px) scale(0); opacity: 0; }
+  }
+`;
+document.head.appendChild(styleEl);
+
+console.log('%c☕ 小馆咖啡 · 时光印记 %c一年 · 十二个月 · 无数个你 %c🎂',
+  'font-size:1.1em;color:#D4A04A;', 'font-size:0.9em;color:#E8C97A;', 'font-size:1.1em;');
+</script>
+</body>
+</html>
